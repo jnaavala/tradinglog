@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RETRO TRADING LOG</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --bg: #0a0f0a;
+    --panel: #0d1a0d;
+    --green: #00ff41;
+    --cyan: #00f0ff;
+    --red: #ff2a2a;
+    --dim: #1a3a1a;
+    --text: #c0ffc0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.12), rgba(0,0,0,0.12) 1px, transparent 1px, transparent 2px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  header {
+    background: #001a00;
+    border-bottom: 2px solid var(--green);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 0 15px rgba(0,255,65,0.3);
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    color: var(--green);
+    text-shadow: 0 0 8px var(--green);
+    letter-spacing: 3px;
+  }
+
+  .header-btns button {
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    padding: 6px 12px;
+    margin-left: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+  }
+  .header-btns button:hover {
+    background: var(--cyan);
+    color: #000;
+    box-shadow: 0 0 12px var(--cyan);
+  }
+
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 370px 1fr;
+    overflow: hidden;
+  }
+
+  .form-panel {
+    background: var(--panel);
+    border-right: 2px solid var(--dim);
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .form-panel h2 {
+    color: var(--cyan);
+    font-size: 1.05rem;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--dim);
+    padding-bottom: 5px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--green);
+    margin: 9px 0 3px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    background: #001400;
+    border: 1px solid var(--dim);
+    color: var(--text);
+    padding: 6px 9px;
+    font-family: inherit;
+    font-size: 0.9rem;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 8px rgba(0,255,65,0.4);
+  }
+
+  textarea { height: 54px; resize: vertical; }
+
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .btn-row {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+  }
+
+  button.primary {
+    flex: 1;
+    background: transparent;
+    border: 2px solid var(--green);
+    color: var(--green);
+    padding: 9px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  button.primary:hover {
+    background: var(--green);
+    color: #000;
+    box-shadow: 0 0 15px var(--green);
+  }
+
+  button.secondary {
+    background: transparent;
+    border: 1px solid #666;
+    color: #aaa;
+    padding: 9px 12px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .tactic-manager {
+    margin-top: 20px;
+    border-top: 1px solid var(--dim);
+    padding-top: 12px;
+  }
+  .tactic-manager h3 {
+    color: var(--cyan);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+  .tactic-list {
+    max-height: 120px;
+    overflow-y: auto;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+  }
+  .tactic-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid #132013;
+  }
+  .tactic-item button {
+    background: none;
+    border: 1px solid #555;
+    color: #ff6b6b;
+    padding: 0 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+  }
+
+  .right-side {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .tabs {
+    display: flex;
+    background: #001a00;
+    border-bottom: 2px solid var(--green);
+  }
+  .tab {
+    padding: 10px 24px;
+    cursor: pointer;
+    color: #6a9a6a;
+    border-right: 1px solid var(--dim);
+  }
+  .tab.active {
+    color: var(--green);
+    background: #002a00;
+    text-shadow: 0 0 6px var(--green);
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1px;
+    background: var(--dim);
+  }
+  .stat-box {
+    background: #001a00;
+    padding: 10px 6px;
+    text-align: center;
+  }
+  .stat-box .label { font-size: 0.65rem; color: #6a9a6a; margin-bottom: 3px; }
+  .stat-box .value { font-size: 1.05rem; color: var(--green); text-shadow: 0 0 6px var(--green); }
+  .stat-box .value.red { color: var(--red); text-shadow: 0 0 6px var(--red); }
+  .stat-box .value.cyan { color: var(--cyan); text-shadow: 0 0 6px var(--cyan); }
+  .stat-box .sub { font-size: 0.7rem; color: #8a9a8a; margin-top: 2px; }
+
+  .content-area {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .table-wrap, .charts-wrap {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    overflow: auto;
+    padding: 10px;
+  }
+  .charts-wrap { display: none; }
+  .charts-wrap.active { display: block; }
+  .table-wrap.active { display: block; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  th {
+    background: #002200;
+    color: var(--cyan);
+    padding: 7px 5px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    border-bottom: 2px solid var(--green);
+    white-space: nowrap;
+  }
+  td {
+    padding: 6px 5px;
+    border-bottom: 1px solid #1a2a1a;
+    white-space: nowrap;
+  }
+  tr:hover { background: #0f1f0f; }
+
+  .win { color: var(--green); }
+  .loss { color: var(--red); }
+  .open { color: var(--cyan); }
+
+  .actions button {
+    background: none;
+    border: 1px solid #444;
+    color: #aaa;
+    padding: 1px 6px;
+    margin-right: 3px;
+    cursor: pointer;
+    font-size: 0.72rem;
+  }
+  .actions button:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  .chart-container {
+    background: #001400;
+    border: 1px solid var(--dim);
+    padding: 15px;
+    margin-bottom: 20px;
+    max-width: 950px;
+  }
+  .chart-container h3 {
+    color: var(--cyan);
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #001000; }
+  ::-webkit-scrollbar-thumb { background: #004400; border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--green); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>RETRO TRADING LOG</h1>
+  <div class="header-btns">
+    <button onclick="exportData()">EXPORT JSON</button>
+    <button onclick="document.getElementById('importFile').click()">IMPORT JSON</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    <button onclick="clearAll()" style="border-color:#ff2a2a;color:#ff2a2a">CLEAR ALL</button>
+  </div>
+</header>
+
+<main>
+  <!-- FORM -->
+  <div class="form-panel">
+    <h2 id="formTitle">NY TRADE</h2>
+    
+    <div class="row-2">
+      <div>
+        <label>TICKER</label>
+        <input type="text" id="ticker" placeholder="AAPL" style="text-transform:uppercase">
+      </div>
+      <div>
+        <label>SHARES</label>
+        <input type="number" id="shares" step="any">
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div>
+        <label>BUY DATE</label>
+        <input type="date" id="buyDate">
+      </div>
+      <div>
+        <label>SELL DATE</label>
+        <input type="date" id="sellDate">
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div>
+        <label>ENTRY</label>
+        <input type="number" id="entry" step="0.01">
+      </div>
+      <div>
+        <label>EXIT</label>
+        <input type="number" id="exit" step="0.01" placeholder="tom = öppen">
+      </div>
+    </div>
+
+    <label>COURTAGE</label>
+    <input type="number" id="courtage" step="0.01" value="0">
+
+    <div class="row-2">
+      <div>
+        <label>GRADE</label>
+        <select id="grade">
+          <option>A++</option><option>A+</option><option>A</option>
+          <option>B+</option><option>B</option><option>C</option><option>D</option>
+        </select>
+      </div>
+      <div>
+        <label>QQQ 20 EMA</label>
+        <select id="qqq">
+          <option>Over</option>
+          <option>Under</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- NYA FÄLT -->
+    <div class="row-3">
+      <div>
+        <label>COMP 3M</label>
+        <input type="number" id="comp3m" step="1" placeholder="t.ex. 95">
+      </div>
+      <div>
+        <label>EPS Rating</label>
+        <input type="number" id="epsRating" step="1" placeholder="t.ex. 88">
+      </div>
+      <div>
+        <label>IND RANK 3M</label>
+        <input type="number" id="indRank" step="1" placeholder="t.ex. 12">
+      </div>
+    </div>
+
+    <label>TACTIC / SETUP</label>
+    <select id="tactic"></select>
+
+    <label>COMMENT</label>
+    <textarea id="comment"></textarea>
+
+    <div class="btn-row">
+      <button class="primary" id="saveBtn" onclick="saveTrade()">SPARA TRADE</button>
+      <button class="secondary" id="cancelBtn" onclick="resetForm()" style="display:none">AVBRYT</button>
+    </div>
+
+    <div class="tactic-manager">
+      <h3>HANTERA SETUPS</h3>
+      <div class="tactic-list" id="tacticList"></div>
+      <div style="display:flex; gap:6px;">
+        <input type="text" id="newTactic" placeholder="Ny setup..." style="flex:1">
+        <button class="secondary" onclick="addTactic()" style="padding:6px 10px;">LÄGG TILL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-side">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('trades')">TRADES</div>
+      <div class="tab" onclick="switchTab('charts')">CHARTS</div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="content-area">
+      <div class="table-wrap active" id="tradesView">
+        <table>
+          <thead>
+            <tr>
+              <th>TICKER</th>
+              <th>BUY</th>
+              <th>SELL</th>
+              <th>SHARES</th>
+              <th>ENTRY</th>
+              <th>EXIT</th>
+              <th>% GAIN</th>
+              <th>USD</th>
+              <th>BARS</th>
+              <th>DAY</th>
+              <th>TACTIC</th>
+              <th>QQQ</th>
+              <th>GRADE</th>
+              <th>STATUS</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tradeTable"></tbody>
+        </table>
+      </div>
+
+      <div class="charts-wrap" id="chartsView">
+        <div class="chart-container">
+          <h3>HISTOGRAM – % GAIN FÖRDELNING</h3>
+          <canvas id="pctChart" height="220"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>GENOMSNITTLIG USD PER SETUP</h3>
+          <canvas id="tacticChart" height="220"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>PRESTANDA PER VECKODAG (Avg USD)</h3>
+          <canvas id="weekdayChart" height="200"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>PRESTANDA PER EPS RATING (Avg USD)</h3>
+          <canvas id="epsChart" height="200"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>PRESTANDA PER COMP 3M (Avg USD)</h3>
+          <canvas id="compChart" height="200"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>PRESTANDA PER IND RANK 3M (Avg USD)</h3>
+          <canvas id="indChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  let trades = JSON.parse(localStorage.getItem('retroTrades') || '[]');
+  let tactics = JSON.parse(localStorage.getItem('retroTactics') || '["RTG","GAP","Breakout","InsideDay","WP","BF","RKMA","InTheWick","Support","HigherLow","HVC","4B-","MA10","GoldenGooseW","N/A"]');
+  let editId = null;
+  let pctChart = null, tacticChart = null, weekdayChart = null, epsChart = null, compChart = null, indChart = null;
+
+  document.getElementById('buyDate').valueAsDate = new Date();
+
+  function saveTactics() {
+    localStorage.setItem('retroTactics', JSON.stringify(tactics));
+    renderTacticSelect();
+    renderTacticList();
+  }
+
+  function renderTacticSelect() {
+    const sel = document.getElementById('tactic');
+    sel.innerHTML = tactics.map(t => `<option value="${t}">${t}</option>`).join('');
+  }
+
+  function renderTacticList() {
+    const list = document.getElementById('tacticList');
+    list.innerHTML = tactics.map((t, i) => `
+      <div class="tactic-item">
+        <span>${t}</span>
+        <button onclick="removeTactic(${i})">×</button>
+      </div>
+    `).join('');
+  }
+
+  function addTactic() {
+    const input = document.getElementById('newTactic');
+    const val = input.value.trim();
+    if (val && !tactics.includes(val)) {
+      tactics.push(val);
+      saveTactics();
+      input.value = '';
+    }
+  }
+
+  function removeTactic(index) {
+    if (confirm('Ta bort setup: ' + tactics[index] + '?')) {
+      tactics.splice(index, 1);
+      saveTactics();
+    }
+  }
+
+  function daysBetween(d1, d2) {
+    if (!d1 || !d2) return '';
+    return Math.round((new Date(d2) - new Date(d1)) / (1000*60*60*24));
+  }
+
+  function getDayName(dateStr) {
+    if (!dateStr) return '';
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    return days[new Date(dateStr).getDay()];
+  }
+
+  function calcTrade(t) {
+    const isOpen = !t.exit || t.exit === '';
+    let pct = null, usd = null, bars = '', outcome = 'OPEN';
+
+    if (!isOpen) {
+      const gross = (parseFloat(t.exit) - parseFloat(t.entry)) * parseFloat(t.shares);
+      usd = gross - (parseFloat(t.courtage) || 0);
+      pct = ((parseFloat(t.exit) - parseFloat(t.entry)) / parseFloat(t.entry)) * 100;
+      bars = daysBetween(t.buyDate, t.sellDate);
+      outcome = usd >= 0 ? 'WIN' : 'LOSS';
+    }
+    return { 
+      ...t, 
+      pct: pct !== null ? +pct.toFixed(2) : null, 
+      usd: usd !== null ? +usd.toFixed(2) : null, 
+      bars, 
+      day: getDayName(t.buyDate), 
+      outcome, 
+      status: isOpen ? 'OPEN' : 'CLOSED' 
+    };
+  }
+
+  function render() {
+    const closed = trades.map(calcTrade).filter(t => t.status === 'CLOSED');
+    const wins = closed.filter(t => t.outcome === 'WIN');
+    const losses = closed.filter(t => t.outcome === 'LOSS');
+    
+    const totalUsd = closed.reduce((s, t) => s + (t.usd || 0), 0);
+    const totalPct = closed.reduce((s, t) => s + (t.pct || 0), 0);
+    const winrate = closed.length ? (wins.length / closed.length * 100).toFixed(1) : 0;
+    
+    const avgWinUsd = wins.length ? (wins.reduce((s,t)=>s+t.usd,0)/wins.length) : 0;
+    const avgLossUsd = losses.length ? (losses.reduce((s,t)=>s+t.usd,0)/losses.length) : 0;
+    const avgWinPct = wins.length ? (wins.reduce((s,t)=>s+t.pct,0)/wins.length) : 0;
+    const avgLossPct = losses.length ? (losses.reduce((s,t)=>s+t.pct,0)/losses.length) : 0;
+    
+    const avgTradePct = closed.length ? (totalPct / closed.length) : 0;
+    
+    // Trades to 100% – bara om positivt
+    let tradesTo100 = '';
+    if (totalPct > 0 && avgTradePct > 0) {
+      const remaining = Math.ceil((100 - totalPct) / avgTradePct);
+      tradesTo100 = remaining > 0 ? remaining : 0;
+    }
+
+    document.getElementById('stats').innerHTML = `
+      <div class="stat-box">
+        <div class="label">TOTAL P/L $</div>
+        <div class="value ${totalUsd>=0?'':'red'}">${totalUsd.toFixed(2)}</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">TOTAL P/L %</div>
+        <div class="value ${totalPct>=0?'':'red'}">${totalPct.toFixed(1)}%</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">WINRATE</div>
+        <div class="value cyan">${winrate}%</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">WINS / LOSSES</div>
+        <div class="value">${wins.length} / <span class="red">${losses.length}</span></div>
+      </div>
+      <div class="stat-box">
+        <div class="label">AVG WIN</div>
+        <div class="value">${avgWinUsd.toFixed(2)}$</div>
+        <div class="sub">${avgWinPct.toFixed(2)}%</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">AVG LOSS</div>
+        <div class="value red">${avgLossUsd.toFixed(2)}$</div>
+        <div class="sub red">${avgLossPct.toFixed(2)}%</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">OPEN</div>
+        <div class="value cyan">${trades.length - closed.length}</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">TOTAL TRADES</div>
+        <div class="value">${trades.length}</div>
+      </div>
+      ${tradesTo100 !== '' ? `
+      <div class="stat-box">
+        <div class="label">TRADES TO 100% P/L</div>
+        <div class="value cyan">${tradesTo100}</div>
+      </div>` : ''}
+    `;
+
+    const tbody = document.getElementById('tradeTable');
+    tbody.innerHTML = '';
+    [...trades].reverse().forEach((raw, idx) => {
+      const t = calcTrade(raw);
+      const realIndex = trades.length - 1 - idx;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${t.ticker}</strong></td>
+        <td>${t.buyDate}</td>
+        <td>${t.sellDate || '-'}</td>
+        <td>${t.shares}</td>
+        <td>${t.entry}</td>
+        <td>${t.exit || '-'}</td>
+        <td class="${t.outcome==='WIN'?'win':t.outcome==='LOSS'?'loss':'open'}">${t.pct !== null ? t.pct+'%' : '-'}</td>
+        <td class="${t.outcome==='WIN'?'win':t.outcome==='LOSS'?'loss':'open'}">${t.usd !== null ? t.usd : '-'}</td>
+        <td>${t.bars || '-'}</td>
+        <td>${t.day}</td>
+        <td>${t.tactic}</td>
+        <td>${t.qqq}</td>
+        <td>${t.grade}</td>
+        <td class="${t.status==='OPEN'?'open':t.outcome==='WIN'?'win':'loss'}">${t.status}</td>
+        <td class="actions">
+          <button onclick="editTrade(${realIndex})">EDIT</button>
+          <button onclick="deleteTrade(${realIndex})">DEL</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    renderCharts(closed);
+  }
+
+  function createBarChart(canvasId, labels, data, existingChart) {
+    if (existingChart) existingChart.destroy();
+    return new Chart(document.getElementById(canvasId), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Avg USD',
+          data: data,
+          backgroundColor: data.map(v => v >= 0 ? 'rgba(0,255,65,0.7)' : 'rgba(255,42,42,0.7)'),
+          borderColor: data.map(v => v >= 0 ? '#00ff41' : '#ff2a2a'),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#8f8', font: { size: 11 } }, grid: { color: '#1a3a1a' } },
+          y: { ticks: { color: '#8f8' }, grid: { color: '#1a3a1a' } }
+        }
+      }
+    });
+  }
+
+  function groupBy(arr, keyFn) {
+    const groups = {};
+    arr.forEach(t => {
+      const key = keyFn(t) || 'N/A';
+      if (!groups[key]) groups[key] = { total: 0, count: 0 };
+      groups[key].total += t.usd;
+      groups[key].count++;
+    });
+    return groups;
+  }
+
+  function renderCharts(closed) {
+    // --- % Gain Histogram ---
+    const bins = {};
+    const ranges = [-50,-20,-10,-5,-3,-1,0,1,3,5,8,10,15,20,50];
+    ranges.forEach((r,i) => {
+      if (i < ranges.length-1) bins[`${ranges[i]}% to ${ranges[i+1]}%`] = 0;
+    });
+    bins['<-50%'] = 0;
+    bins['>50%'] = 0;
+
+    closed.forEach(t => {
+      const p = t.pct;
+      if (p < -50) bins['<-50%']++;
+      else if (p > 50) bins['>50%']++;
+      else {
+        for (let i = 0; i < ranges.length-1; i++) {
+          if (p >= ranges[i] && p < ranges[i+1]) {
+            bins[`${ranges[i]}% to ${ranges[i+1]}%`]++;
+            break;
+          }
+        }
+      }
+    });
+
+    const pctLabels = Object.keys(bins);
+    const pctData = Object.values(bins);
+
+    if (pctChart) pctChart.destroy();
+    pctChart = new Chart(document.getElementById('pctChart'), {
+      type: 'bar',
+      data: {
+        labels: pctLabels,
+        datasets: [{
+          label: 'Antal trades',
+          data: pctData,
+          backgroundColor: pctLabels.map(l => l.includes('-') || l.includes('<-') ? 'rgba(255,42,42,0.7)' : 'rgba(0,255,65,0.7)'),
+          borderColor: pctLabels.map(l => l.includes('-') || l.includes('<-') ? '#ff2a2a' : '#00ff41'),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#8f8', maxRotation: 45, minRotation: 45, font: { size: 10 } }, grid: { color: '#1a3a1a' } },
+          y: { beginAtZero: true, ticks: { color: '#8f8', stepSize: 1 }, grid: { color: '#1a3a1a' } }
+        }
+      }
+    });
+
+    // --- Tactic Chart ---
+    const tacticStats = groupBy(closed, t => t.tactic);
+    const tLabels = Object.keys(tacticStats);
+    const tData = tLabels.map(t => +(tacticStats[t].total / tacticStats[t].count).toFixed(2));
+    tacticChart = createBarChart('tacticChart', tLabels, tData, tacticChart);
+
+    // --- Weekday Chart ---
+    const dayOrder = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const dayStats = groupBy(closed, t => t.day);
+    const dayLabels = dayOrder.filter(d => dayStats[d]);
+    const dayData = dayLabels.map(d => +(dayStats[d].total / dayStats[d].count).toFixed(2));
+    weekdayChart = createBarChart('weekdayChart', dayLabels, dayData, weekdayChart);
+
+    // --- EPS Rating Chart (grupperar i ranges) ---
+    const epsGroups = groupBy(closed, t => {
+      const v = parseInt(t.epsRating);
+      if (isNaN(v)) return 'N/A';
+      if (v >= 90) return '90-99';
+      if (v >= 80) return '80-89';
+      if (v >= 70) return '70-79';
+      if (v >= 60) return '60-69';
+      return '<60';
+    });
+    const epsLabels = Object.keys(epsGroups).sort();
+    const epsData = epsLabels.map(k => +(epsGroups[k].total / epsGroups[k].count).toFixed(2));
+    epsChart = createBarChart('epsChart', epsLabels, epsData, epsChart);
+
+    // --- COMP 3M Chart ---
+    const compGroups = groupBy(closed, t => {
+      const v = parseInt(t.comp3m);
+      if (isNaN(v)) return 'N/A';
+      if (v >= 95) return '95-99';
+      if (v >= 90) return '90-94';
+      if (v >= 80) return '80-89';
+      if (v >= 70) return '70-79';
+      return '<70';
+    });
+    const compLabels = Object.keys(compGroups).sort();
+    const compData = compLabels.map(k => +(compGroups[k].total / compGroups[k].count).toFixed(2));
+    compChart = createBarChart('compChart', compLabels, compData, compChart);
+
+    // --- IND RANK 3M Chart ---
+    const indGroups = groupBy(closed, t => {
+      const v = parseInt(t.indRank);
+      if (isNaN(v)) return 'N/A';
+      if (v <= 10) return '1-10';
+      if (v <= 20) return '11-20';
+      if (v <= 40) return '21-40';
+      if (v <= 60) return '41-60';
+      return '>60';
+    });
+    const indLabels = Object.keys(indGroups).sort((a,b) => {
+      const order = ['1-10','11-20','21-40','41-60','>60','N/A'];
+      return order.indexOf(a) - order.indexOf(b);
+    });
+    const indData = indLabels.map(k => +(indGroups[k].total / indGroups[k].count).toFixed(2));
+    indChart = createBarChart('indChart', indLabels, indData, indChart);
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.table-wrap, .charts-wrap').forEach(v => v.classList.remove('active'));
+    
+    if (tab === 'trades') {
+      document.querySelector('.tab:nth-child(1)').classList.add('active');
+      document.getElementById('tradesView').classList.add('active');
+    } else {
+      document.querySelector('.tab:nth-child(2)').classList.add('active');
+      document.getElementById('chartsView').classList.add('active');
+      render();
+    }
+  }
+
+  function saveTrade() {
+    const trade = {
+      id: editId || Date.now(),
+      ticker: document.getElementById('ticker').value.toUpperCase().trim(),
+      shares: document.getElementById('shares').value,
+      buyDate: document.getElementById('buyDate').value,
+      sellDate: document.getElementById('sellDate').value,
+      entry: document.getElementById('entry').value,
+      exit: document.getElementById('exit').value,
+      courtage: document.getElementById('courtage').value || 0,
+      grade: document.getElementById('grade').value,
+      qqq: document.getElementById('qqq').value,
+      tactic: document.getElementById('tactic').value,
+      comment: document.getElementById('comment').value,
+      // Nya fält
+      comp3m: document.getElementById('comp3m').value || '',
+      epsRating: document.getElementById('epsRating').value || '',
+      indRank: document.getElementById('indRank').value || ''
+    };
+
+    if (!trade.ticker || !trade.shares || !trade.buyDate || !trade.entry) {
+      alert('Fyll i minst Ticker, Shares, Buy Date och Entry');
+      return;
+    }
+
+    if (editId !== null) {
+      const idx = trades.findIndex(t => t.id === editId);
+      trades[idx] = trade;
+    } else {
+      trades.push(trade);
+    }
+
+    localStorage.setItem('retroTrades', JSON.stringify(trades));
+    resetForm();
+    render();
+  }
+
+  function editTrade(index) {
+    const t = trades[index];
+    editId = t.id;
+    document.getElementById('formTitle').textContent = 'REDIGERA TRADE';
+    document.getElementById('saveBtn').textContent = 'UPPDATERA';
+    document.getElementById('cancelBtn').style.display = 'inline-block';
+
+    document.getElementById('ticker').value = t.ticker;
+    document.getElementById('shares').value = t.shares;
+    document.getElementById('buyDate').value = t.buyDate;
+    document.getElementById('sellDate').value = t.sellDate || '';
+    document.getElementById('entry').value = t.entry;
+    document.getElementById('exit').value = t.exit || '';
+    document.getElementById('courtage').value = t.courtage;
+    document.getElementById('grade').value = t.grade;
+    document.getElementById('qqq').value = t.qqq;
+    document.getElementById('tactic').value = t.tactic;
+    document.getElementById('comment').value = t.comment || '';
+    // Nya fält
+    document.getElementById('comp3m').value = t.comp3m || '';
+    document.getElementById('epsRating').value = t.epsRating || '';
+    document.getElementById('indRank').value = t.indRank || '';
+  }
+
+  function deleteTrade(index) {
+    if (confirm('Ta bort denna trade?')) {
+      trades.splice(index, 1);
+      localStorage.setItem('retroTrades', JSON.stringify(trades));
+      render();
+    }
+  }
+
+  function resetForm() {
+    editId = null;
+    document.getElementById('formTitle').textContent = 'NY TRADE';
+    document.getElementById('saveBtn').textContent = 'SPARA TRADE';
+    document.getElementById('cancelBtn').style.display = 'none';
+    document.getElementById('ticker').value = '';
+    document.getElementById('shares').value = '';
+    document.getElementById('buyDate').valueAsDate = new Date();
+    document.getElementById('sellDate').value = '';
+    document.getElementById('entry').value = '';
+    document.getElementById('exit').value = '';
+    document.getElementById('courtage').value = '0';
+    document.getElementById('comment').value = '';
+    document.getElementById('comp3m').value = '';
+    document.getElementById('epsRating').value = '';
+    document.getElementById('indRank').value = '';
+  }
+
+  function exportData() {
+    const dataStr = JSON.stringify(trades, null, 2);
+    const blob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `trading-log-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+  }
+
+  function importData(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (Array.isArray(imported)) {
+          if (confirm(`Importera ${imported.length} trades?`)) {
+            trades = trades.concat(imported);
+            localStorage.setItem('retroTrades', JSON.stringify(trades));
+            render();
+          }
+        }
+      } catch (err) { alert('Ogiltig JSON-fil'); }
+    };
+    reader.readAsText(file);
+  }
+
+  function clearAll() {
+    if (confirm('Är du helt säker? All data raderas.')) {
+      trades = [];
+      localStorage.removeItem('retroTrades');
+      render();
+    }
+  }
+
+  // Init
+  renderTacticSelect();
+  renderTacticList();
+  render();
+</script>
+</body>
+</html>
