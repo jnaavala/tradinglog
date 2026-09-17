@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -72,6 +72,25 @@
     box-shadow: 0 0 12px var(--cyan);
   }
 
+  .reminder {
+    background: #3a1a00;
+    color: #ffaa00;
+    text-align: center;
+    padding: 8px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #664400;
+    display: none;
+  }
+  .reminder button {
+    background: transparent;
+    border: 1px solid #ffaa00;
+    color: #ffaa00;
+    padding: 3px 10px;
+    margin-left: 12px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
   main {
     flex: 1;
     display: grid;
@@ -124,9 +143,9 @@
     gap: 8px;
   }
 
-  .row-3 {
+  .row-4 {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 8px;
   }
 
@@ -193,6 +212,14 @@
     font-size: 0.75rem;
   }
 
+  .account-box {
+    background: #001a00;
+    border: 1px solid var(--dim);
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  .account-box label { margin-top: 0; }
+
   .right-side {
     display: flex;
     flex-direction: column;
@@ -203,12 +230,14 @@
     display: flex;
     background: #001a00;
     border-bottom: 2px solid var(--green);
+    overflow-x: auto;
   }
   .tab {
-    padding: 10px 24px;
+    padding: 10px 18px;
     cursor: pointer;
     color: #6a9a6a;
     border-right: 1px solid var(--dim);
+    white-space: nowrap;
   }
   .tab.active {
     color: var(--green);
@@ -216,22 +245,40 @@
     text-shadow: 0 0 6px var(--green);
   }
 
+  .year-tabs {
+    display: flex;
+    background: #001400;
+    border-bottom: 1px solid var(--dim);
+    overflow-x: auto;
+  }
+  .year-tab {
+    padding: 7px 14px;
+    cursor: pointer;
+    color: #6a9a6a;
+    font-size: 0.85rem;
+    border-right: 1px solid #1a2a1a;
+  }
+  .year-tab.active {
+    color: var(--cyan);
+    background: #002a00;
+  }
+
   .stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
     gap: 1px;
     background: var(--dim);
   }
   .stat-box {
     background: #001a00;
-    padding: 10px 6px;
+    padding: 9px 5px;
     text-align: center;
   }
-  .stat-box .label { font-size: 0.65rem; color: #6a9a6a; margin-bottom: 3px; }
-  .stat-box .value { font-size: 1.05rem; color: var(--green); text-shadow: 0 0 6px var(--green); }
+  .stat-box .label { font-size: 0.62rem; color: #6a9a6a; margin-bottom: 2px; }
+  .stat-box .value { font-size: 1.0rem; color: var(--green); text-shadow: 0 0 6px var(--green); }
   .stat-box .value.red { color: var(--red); text-shadow: 0 0 6px var(--red); }
   .stat-box .value.cyan { color: var(--cyan); text-shadow: 0 0 6px var(--cyan); }
-  .stat-box .sub { font-size: 0.7rem; color: #8a9a8a; margin-top: 2px; }
+  .stat-box .sub { font-size: 0.68rem; color: #8a9a8a; margin-top: 1px; }
 
   .content-area {
     flex: 1;
@@ -317,10 +364,20 @@
   </div>
 </header>
 
+<div class="reminder" id="exportReminder">
+  It has been more than 7 days since your last export. 
+  <button onclick="exportAndMail()">EXPORT & OPEN MAIL</button>
+</div>
+
 <main>
   <!-- FORM -->
   <div class="form-panel">
-    <h2 id="formTitle">NY TRADE</h2>
+    <h2 id="formTitle">NEW TRADE</h2>
+
+    <div class="account-box">
+      <label>STARTING CAPITAL ($)</label>
+      <input type="number" id="startingCapital" step="0.01" onchange="saveStartingCapital()">
+    </div>
     
     <div class="row-2">
       <div>
@@ -351,12 +408,9 @@
       </div>
       <div>
         <label>EXIT</label>
-        <input type="number" id="exit" step="0.01" placeholder="tom = öppen">
+        <input type="number" id="exit" step="0.01" placeholder="empty = open">
       </div>
     </div>
-
-    <label>COURTAGE</label>
-    <input type="number" id="courtage" step="0.01" value="0">
 
     <div class="row-2">
       <div>
@@ -375,19 +429,23 @@
       </div>
     </div>
 
-    <!-- NYA FÄLT -->
-    <div class="row-3">
+    <!-- Ratings -->
+    <div class="row-4">
       <div>
         <label>COMP 3M</label>
-        <input type="number" id="comp3m" step="1" placeholder="t.ex. 95">
+        <input type="number" id="comp3m" step="1" placeholder="95">
       </div>
       <div>
         <label>EPS Rating</label>
-        <input type="number" id="epsRating" step="1" placeholder="t.ex. 88">
+        <input type="number" id="epsRating" step="1" placeholder="88">
       </div>
       <div>
-        <label>IND RANK 3M</label>
-        <input type="number" id="indRank" step="1" placeholder="t.ex. 12">
+        <label>IND RANK</label>
+        <input type="number" id="indRank" step="1" placeholder="12">
+      </div>
+      <div>
+        <label>RS Line</label>
+        <input type="number" id="rsLine" step="1" placeholder="87">
       </div>
     </div>
 
@@ -398,16 +456,16 @@
     <textarea id="comment"></textarea>
 
     <div class="btn-row">
-      <button class="primary" id="saveBtn" onclick="saveTrade()">SPARA TRADE</button>
-      <button class="secondary" id="cancelBtn" onclick="resetForm()" style="display:none">AVBRYT</button>
+      <button class="primary" id="saveBtn" onclick="saveTrade()">SAVE TRADE</button>
+      <button class="secondary" id="cancelBtn" onclick="resetForm()" style="display:none">CANCEL</button>
     </div>
 
     <div class="tactic-manager">
-      <h3>HANTERA SETUPS</h3>
+      <h3>MANAGE SETUPS</h3>
       <div class="tactic-list" id="tacticList"></div>
       <div style="display:flex; gap:6px;">
-        <input type="text" id="newTactic" placeholder="Ny setup..." style="flex:1">
-        <button class="secondary" onclick="addTactic()" style="padding:6px 10px;">LÄGG TILL</button>
+        <input type="text" id="newTactic" placeholder="New setup..." style="flex:1">
+        <button class="secondary" onclick="addTactic()" style="padding:6px 10px;">ADD</button>
       </div>
     </div>
   </div>
@@ -418,6 +476,8 @@
       <div class="tab active" onclick="switchTab('trades')">TRADES</div>
       <div class="tab" onclick="switchTab('charts')">CHARTS</div>
     </div>
+
+    <div class="year-tabs" id="yearTabs"></div>
 
     <div class="stats" id="stats"></div>
 
@@ -449,28 +509,32 @@
 
       <div class="charts-wrap" id="chartsView">
         <div class="chart-container">
-          <h3>HISTOGRAM – % GAIN FÖRDELNING</h3>
+          <h3>HISTOGRAM – % GAIN DISTRIBUTION</h3>
           <canvas id="pctChart" height="220"></canvas>
         </div>
         <div class="chart-container">
-          <h3>GENOMSNITTLIG USD PER SETUP</h3>
+          <h3>AVERAGE USD PER SETUP</h3>
           <canvas id="tacticChart" height="220"></canvas>
         </div>
         <div class="chart-container">
-          <h3>PRESTANDA PER VECKODAG (Avg USD)</h3>
+          <h3>PERFORMANCE BY WEEKDAY (Avg USD)</h3>
           <canvas id="weekdayChart" height="200"></canvas>
         </div>
         <div class="chart-container">
-          <h3>PRESTANDA PER EPS RATING (Avg USD)</h3>
+          <h3>PERFORMANCE BY EPS RATING (Avg USD)</h3>
           <canvas id="epsChart" height="200"></canvas>
         </div>
         <div class="chart-container">
-          <h3>PRESTANDA PER COMP 3M (Avg USD)</h3>
+          <h3>PERFORMANCE BY COMP 3M (Avg USD)</h3>
           <canvas id="compChart" height="200"></canvas>
         </div>
         <div class="chart-container">
-          <h3>PRESTANDA PER IND RANK 3M (Avg USD)</h3>
+          <h3>PERFORMANCE BY IND RANK (Avg USD)</h3>
           <canvas id="indChart" height="200"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>PERFORMANCE BY RS LINE (Avg USD)</h3>
+          <canvas id="rsChart" height="200"></canvas>
         </div>
       </div>
     </div>
@@ -480,10 +544,37 @@
 <script>
   let trades = JSON.parse(localStorage.getItem('retroTrades') || '[]');
   let tactics = JSON.parse(localStorage.getItem('retroTactics') || '["RTG","GAP","Breakout","InsideDay","WP","BF","RKMA","InTheWick","Support","HigherLow","HVC","4B-","MA10","GoldenGooseW","N/A"]');
+  let startingCapital = parseFloat(localStorage.getItem('retroStartingCapital') || '0');
+  let lastExport = localStorage.getItem('retroLastExport') || null;
   let editId = null;
-  let pctChart = null, tacticChart = null, weekdayChart = null, epsChart = null, compChart = null, indChart = null;
+  let currentYear = 'all';
+  let pctChart = null, tacticChart = null, weekdayChart = null, epsChart = null, compChart = null, indChart = null, rsChart = null;
 
   document.getElementById('buyDate').valueAsDate = new Date();
+  document.getElementById('startingCapital').value = startingCapital || '';
+
+  function saveStartingCapital() {
+    startingCapital = parseFloat(document.getElementById('startingCapital').value) || 0;
+    localStorage.setItem('retroStartingCapital', startingCapital);
+    render();
+  }
+
+  function checkExportReminder() {
+    const reminder = document.getElementById('exportReminder');
+    if (!lastExport) {
+      reminder.style.display = 'block';
+      return;
+    }
+    const days = (Date.now() - new Date(lastExport).getTime()) / (1000*60*60*24);
+    reminder.style.display = days > 7 ? 'block' : 'none';
+  }
+
+  function exportAndMail() {
+    exportData();
+    const subject = encodeURIComponent('Trading Log Backup');
+    const body = encodeURIComponent('Here is my weekly trading log backup.\n\n(Please attach the downloaded JSON file)');
+    window.open(`mailto:?subject=${subject}&body=${body}`);
+  }
 
   function saveTactics() {
     localStorage.setItem('retroTactics', JSON.stringify(tactics));
@@ -517,7 +608,7 @@
   }
 
   function removeTactic(index) {
-    if (confirm('Ta bort setup: ' + tactics[index] + '?')) {
+    if (confirm('Remove setup: ' + tactics[index] + '?')) {
       tactics.splice(index, 1);
       saveTactics();
     }
@@ -534,14 +625,27 @@
     return days[new Date(dateStr).getDay()];
   }
 
+  function getYear(dateStr) {
+    if (!dateStr) return null;
+    return new Date(dateStr).getFullYear();
+  }
+
   function calcTrade(t) {
     const isOpen = !t.exit || t.exit === '';
     let pct = null, usd = null, bars = '', outcome = 'OPEN';
 
     if (!isOpen) {
-      const gross = (parseFloat(t.exit) - parseFloat(t.entry)) * parseFloat(t.shares);
-      usd = gross - (parseFloat(t.courtage) || 0);
-      pct = ((parseFloat(t.exit) - parseFloat(t.entry)) / parseFloat(t.entry)) * 100;
+      const shares = parseFloat(t.shares);
+      const entry = parseFloat(t.entry);
+      const exit = parseFloat(t.exit);
+      
+      const buyValue = entry * shares;
+      const sellValue = exit * shares;
+      const commission = (buyValue * 0.002) + (sellValue * 0.002); // 0.20% + 0.20%
+      
+      const gross = (exit - entry) * shares;
+      usd = gross - commission;
+      pct = ((exit - entry) / entry) * 100;
       bars = daysBetween(t.buyDate, t.sellDate);
       outcome = usd >= 0 ? 'WIN' : 'LOSS';
     }
@@ -551,13 +655,40 @@
       usd: usd !== null ? +usd.toFixed(2) : null, 
       bars, 
       day: getDayName(t.buyDate), 
+      year: getYear(t.buyDate),
       outcome, 
       status: isOpen ? 'OPEN' : 'CLOSED' 
     };
   }
 
+  function getFilteredTrades() {
+    const all = trades.map(calcTrade);
+    if (currentYear === 'all') return all;
+    return all.filter(t => t.year == currentYear);
+  }
+
+  function renderYearTabs() {
+    const years = [...new Set(trades.map(t => getYear(t.buyDate)).filter(y => y))].sort((a,b) => b - a);
+    const container = document.getElementById('yearTabs');
+    
+    let html = `<div class="year-tab ${currentYear==='all'?'active':''}" onclick="setYear('all')">ALL YEARS</div>`;
+    years.forEach(y => {
+      html += `<div class="year-tab ${currentYear==y?'active':''}" onclick="setYear(${y})">${y}</div>`;
+    });
+    container.innerHTML = html;
+  }
+
+  function setYear(year) {
+    currentYear = year;
+    render();
+  }
+
   function render() {
-    const closed = trades.map(calcTrade).filter(t => t.status === 'CLOSED');
+    renderYearTabs();
+    checkExportReminder();
+
+    const allCalculated = getFilteredTrades();
+    const closed = allCalculated.filter(t => t.status === 'CLOSED');
     const wins = closed.filter(t => t.outcome === 'WIN');
     const losses = closed.filter(t => t.outcome === 'LOSS');
     
@@ -572,21 +703,31 @@
     
     const avgTradePct = closed.length ? (totalPct / closed.length) : 0;
     
-    // Trades to 100% – bara om positivt
     let tradesTo100 = '';
     if (totalPct > 0 && avgTradePct > 0) {
       const remaining = Math.ceil((100 - totalPct) / avgTradePct);
       tradesTo100 = remaining > 0 ? remaining : 0;
     }
 
+    const currentEquity = startingCapital + totalUsd;
+    const totalReturnPct = startingCapital > 0 ? ((totalUsd / startingCapital) * 100).toFixed(1) : 0;
+
     document.getElementById('stats').innerHTML = `
+      <div class="stat-box">
+        <div class="label">STARTING CAPITAL</div>
+        <div class="value cyan">${startingCapital.toFixed(0)}</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">CURRENT EQUITY</div>
+        <div class="value ${currentEquity>=startingCapital?'':'red'}">${currentEquity.toFixed(0)}</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">TOTAL RETURN</div>
+        <div class="value ${totalUsd>=0?'':'red'}">${totalReturnPct}%</div>
+      </div>
       <div class="stat-box">
         <div class="label">TOTAL P/L $</div>
         <div class="value ${totalUsd>=0?'':'red'}">${totalUsd.toFixed(2)}</div>
-      </div>
-      <div class="stat-box">
-        <div class="label">TOTAL P/L %</div>
-        <div class="value ${totalPct>=0?'':'red'}">${totalPct.toFixed(1)}%</div>
       </div>
       <div class="stat-box">
         <div class="label">WINRATE</div>
@@ -594,7 +735,7 @@
       </div>
       <div class="stat-box">
         <div class="label">WINS / LOSSES</div>
-        <div class="value">${wins.length} / <span class="red">${losses.length}</span></div>
+        <div class="value">${wins.length} / <span style="color:var(--red)">${losses.length}</span></div>
       </div>
       <div class="stat-box">
         <div class="label">AVG WIN</div>
@@ -608,11 +749,11 @@
       </div>
       <div class="stat-box">
         <div class="label">OPEN</div>
-        <div class="value cyan">${trades.length - closed.length}</div>
+        <div class="value cyan">${allCalculated.length - closed.length}</div>
       </div>
       <div class="stat-box">
         <div class="label">TOTAL TRADES</div>
-        <div class="value">${trades.length}</div>
+        <div class="value">${allCalculated.length}</div>
       </div>
       ${tradesTo100 !== '' ? `
       <div class="stat-box">
@@ -623,9 +764,9 @@
 
     const tbody = document.getElementById('tradeTable');
     tbody.innerHTML = '';
-    [...trades].reverse().forEach((raw, idx) => {
-      const t = calcTrade(raw);
-      const realIndex = trades.length - 1 - idx;
+    [...allCalculated].reverse().forEach((t) => {
+      // Find original index for edit/delete
+      const realIndex = trades.findIndex(raw => raw.id === t.id);
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>${t.ticker}</strong></td>
@@ -690,7 +831,7 @@
   }
 
   function renderCharts(closed) {
-    // --- % Gain Histogram ---
+    // Histogram
     const bins = {};
     const ranges = [-50,-20,-10,-5,-3,-1,0,1,3,5,8,10,15,20,50];
     ranges.forEach((r,i) => {
@@ -722,7 +863,7 @@
       data: {
         labels: pctLabels,
         datasets: [{
-          label: 'Antal trades',
+          label: 'Number of trades',
           data: pctData,
           backgroundColor: pctLabels.map(l => l.includes('-') || l.includes('<-') ? 'rgba(255,42,42,0.7)' : 'rgba(0,255,65,0.7)'),
           borderColor: pctLabels.map(l => l.includes('-') || l.includes('<-') ? '#ff2a2a' : '#00ff41'),
@@ -739,20 +880,20 @@
       }
     });
 
-    // --- Tactic Chart ---
+    // Tactic
     const tacticStats = groupBy(closed, t => t.tactic);
     const tLabels = Object.keys(tacticStats);
     const tData = tLabels.map(t => +(tacticStats[t].total / tacticStats[t].count).toFixed(2));
     tacticChart = createBarChart('tacticChart', tLabels, tData, tacticChart);
 
-    // --- Weekday Chart ---
+    // Weekday
     const dayOrder = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
     const dayStats = groupBy(closed, t => t.day);
     const dayLabels = dayOrder.filter(d => dayStats[d]);
     const dayData = dayLabels.map(d => +(dayStats[d].total / dayStats[d].count).toFixed(2));
     weekdayChart = createBarChart('weekdayChart', dayLabels, dayData, weekdayChart);
 
-    // --- EPS Rating Chart (grupperar i ranges) ---
+    // EPS
     const epsGroups = groupBy(closed, t => {
       const v = parseInt(t.epsRating);
       if (isNaN(v)) return 'N/A';
@@ -766,7 +907,7 @@
     const epsData = epsLabels.map(k => +(epsGroups[k].total / epsGroups[k].count).toFixed(2));
     epsChart = createBarChart('epsChart', epsLabels, epsData, epsChart);
 
-    // --- COMP 3M Chart ---
+    // COMP
     const compGroups = groupBy(closed, t => {
       const v = parseInt(t.comp3m);
       if (isNaN(v)) return 'N/A';
@@ -780,7 +921,7 @@
     const compData = compLabels.map(k => +(compGroups[k].total / compGroups[k].count).toFixed(2));
     compChart = createBarChart('compChart', compLabels, compData, compChart);
 
-    // --- IND RANK 3M Chart ---
+    // IND RANK
     const indGroups = groupBy(closed, t => {
       const v = parseInt(t.indRank);
       if (isNaN(v)) return 'N/A';
@@ -796,6 +937,20 @@
     });
     const indData = indLabels.map(k => +(indGroups[k].total / indGroups[k].count).toFixed(2));
     indChart = createBarChart('indChart', indLabels, indData, indChart);
+
+    // RS Line (new)
+    const rsGroups = groupBy(closed, t => {
+      const v = parseInt(t.rsLine);
+      if (isNaN(v)) return 'N/A';
+      if (v >= 90) return '90-99';
+      if (v >= 80) return '80-89';
+      if (v >= 70) return '70-79';
+      if (v >= 60) return '60-69';
+      return '<60';
+    });
+    const rsLabels = Object.keys(rsGroups).sort();
+    const rsData = rsLabels.map(k => +(rsGroups[k].total / rsGroups[k].count).toFixed(2));
+    rsChart = createBarChart('rsChart', rsLabels, rsData, rsChart);
   }
 
   function switchTab(tab) {
@@ -821,19 +976,18 @@
       sellDate: document.getElementById('sellDate').value,
       entry: document.getElementById('entry').value,
       exit: document.getElementById('exit').value,
-      courtage: document.getElementById('courtage').value || 0,
       grade: document.getElementById('grade').value,
       qqq: document.getElementById('qqq').value,
       tactic: document.getElementById('tactic').value,
       comment: document.getElementById('comment').value,
-      // Nya fält
       comp3m: document.getElementById('comp3m').value || '',
       epsRating: document.getElementById('epsRating').value || '',
-      indRank: document.getElementById('indRank').value || ''
+      indRank: document.getElementById('indRank').value || '',
+      rsLine: document.getElementById('rsLine').value || ''
     };
 
     if (!trade.ticker || !trade.shares || !trade.buyDate || !trade.entry) {
-      alert('Fyll i minst Ticker, Shares, Buy Date och Entry');
+      alert('Please fill in at least Ticker, Shares, Buy Date and Entry');
       return;
     }
 
@@ -852,8 +1006,8 @@
   function editTrade(index) {
     const t = trades[index];
     editId = t.id;
-    document.getElementById('formTitle').textContent = 'REDIGERA TRADE';
-    document.getElementById('saveBtn').textContent = 'UPPDATERA';
+    document.getElementById('formTitle').textContent = 'EDIT TRADE';
+    document.getElementById('saveBtn').textContent = 'UPDATE';
     document.getElementById('cancelBtn').style.display = 'inline-block';
 
     document.getElementById('ticker').value = t.ticker;
@@ -862,19 +1016,18 @@
     document.getElementById('sellDate').value = t.sellDate || '';
     document.getElementById('entry').value = t.entry;
     document.getElementById('exit').value = t.exit || '';
-    document.getElementById('courtage').value = t.courtage;
     document.getElementById('grade').value = t.grade;
     document.getElementById('qqq').value = t.qqq;
     document.getElementById('tactic').value = t.tactic;
     document.getElementById('comment').value = t.comment || '';
-    // Nya fält
     document.getElementById('comp3m').value = t.comp3m || '';
     document.getElementById('epsRating').value = t.epsRating || '';
     document.getElementById('indRank').value = t.indRank || '';
+    document.getElementById('rsLine').value = t.rsLine || '';
   }
 
   function deleteTrade(index) {
-    if (confirm('Ta bort denna trade?')) {
+    if (confirm('Delete this trade?')) {
       trades.splice(index, 1);
       localStorage.setItem('retroTrades', JSON.stringify(trades));
       render();
@@ -883,8 +1036,8 @@
 
   function resetForm() {
     editId = null;
-    document.getElementById('formTitle').textContent = 'NY TRADE';
-    document.getElementById('saveBtn').textContent = 'SPARA TRADE';
+    document.getElementById('formTitle').textContent = 'NEW TRADE';
+    document.getElementById('saveBtn').textContent = 'SAVE TRADE';
     document.getElementById('cancelBtn').style.display = 'none';
     document.getElementById('ticker').value = '';
     document.getElementById('shares').value = '';
@@ -892,11 +1045,11 @@
     document.getElementById('sellDate').value = '';
     document.getElementById('entry').value = '';
     document.getElementById('exit').value = '';
-    document.getElementById('courtage').value = '0';
     document.getElementById('comment').value = '';
     document.getElementById('comp3m').value = '';
     document.getElementById('epsRating').value = '';
     document.getElementById('indRank').value = '';
+    document.getElementById('rsLine').value = '';
   }
 
   function exportData() {
@@ -907,6 +1060,10 @@
     a.href = url;
     a.download = `trading-log-${new Date().toISOString().slice(0,10)}.json`;
     a.click();
+    
+    lastExport = new Date().toISOString();
+    localStorage.setItem('retroLastExport', lastExport);
+    checkExportReminder();
   }
 
   function importData(e) {
@@ -917,19 +1074,19 @@
       try {
         const imported = JSON.parse(ev.target.result);
         if (Array.isArray(imported)) {
-          if (confirm(`Importera ${imported.length} trades?`)) {
+          if (confirm(`Import ${imported.length} trades?`)) {
             trades = trades.concat(imported);
             localStorage.setItem('retroTrades', JSON.stringify(trades));
             render();
           }
         }
-      } catch (err) { alert('Ogiltig JSON-fil'); }
+      } catch (err) { alert('Invalid JSON file'); }
     };
     reader.readAsText(file);
   }
 
   function clearAll() {
-    if (confirm('Är du helt säker? All data raderas.')) {
+    if (confirm('Are you sure? All data will be deleted.')) {
       trades = [];
       localStorage.removeItem('retroTrades');
       render();
